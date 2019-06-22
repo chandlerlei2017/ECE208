@@ -88,8 +88,7 @@ bool DPLL(  vector<vector<int>> formula, int assn ) {
   if ( res == sat ) return true;
   else if ( res == unsat ) return false;
 
-  if ( DPLL( formula, formula[0][0] ) == true ) return true;
-  return DPLL( formula, -formula[0][0] );
+  return DPLL( formula, formula[0][0] ) || DPLL( formula, -formula[0][0] );
 }
 
 int main()
