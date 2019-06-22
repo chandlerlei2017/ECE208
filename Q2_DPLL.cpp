@@ -10,8 +10,8 @@ using namespace std;
 enum bcp_status{sat, unsat, cont};
 
 // Use to debug program
-
 void print_vector( vector<vector<int>> temp ){
+  cout << "[";
   for ( int i = 0; i < temp.size(); i++ ){
     cout << "[";
     for( int j = 0; j < temp[i].size(); j++){
@@ -20,10 +20,11 @@ void print_vector( vector<vector<int>> temp ){
     }
     cout << "]" ;
     if ( i != temp.size() - 1) cout << ", ";
-    else cout << endl << endl;
   }
+  cout << "]" << endl;
 }
 
+// Determine if element is in the vector
 bool in_vector ( vector<int> vec, int item ) {
   vector<int>::iterator it;
   it = find(vec.begin(), vec.end(), item);
@@ -32,11 +33,30 @@ bool in_vector ( vector<int> vec, int item ) {
   return true;
 }
 
-enum bcp_status BCP(  vector< vector< int > >& formula, int var) {
+void UR( vector< vector< int > >& formula ){
+  for ( int i = 0; i < formula.size(); i++ ) {
+    if ( formula[i].size() != 1 ) break;
+    bool flag = false;
+
+    for( int j = 0; j < formula.size(); j++ ){
+      if( formula[j].size() <= 1 || !in_vector(formula[j], -formula[i][0]) ) break;
+
+      formula[j].erase(find( formula[j].begin(), formula[j].end(), -formula[i][0]));
+      flag = true;
+    }
+
+    if (flag){
+      formula.erase(formula.begin() + i);
+      i--;
+    }
+  }
+}
+
+// BCP to simplify formula
+enum bcp_status BCP(  vector< vector< int > >& formula, int var ) {
   vector< vector< int > > copy = formula;
 
   for ( int i = 0; i < copy.size(); i++ ) {
-
     if (in_vector(copy[i], var)) {
       copy.erase(copy.begin() + i);
       i--;
@@ -49,21 +69,26 @@ enum bcp_status BCP(  vector< vector< int > >& formula, int var) {
     }
   }
 
-  if (copy.size() == 0) return sat;
+  // Unit Resolution
+
+  UR(copy);
+
+  print_vector(copy);
+
+  if ( copy.size() == 0 ) return sat;
 
   formula = copy;
   return cont;
 }
 
-string DPLL(  vector<vector<int>> formula, int assn ) {
-  print_vector(formula);
-
+// DPLL to determine satisfiability
+bool DPLL(  vector<vector<int>> formula, int assn ) {
   enum bcp_status res = BCP(formula, assn);
 
-  if ( res == sat ) return "SAT";
-  else if ( res == unsat ) return "UNSAT";
+  if ( res == sat ) return true;
+  else if ( res == unsat ) return false;
 
-  if ( DPLL( formula, formula[0][0]) == "SAT" ) return "SAT";
+  if ( DPLL( formula, formula[0][0] ) == true ) return true;
   return DPLL( formula, -formula[0][0] );
 }
 
@@ -93,9 +118,11 @@ int main()
   }
   file.close();
 
-  string ret = DPLL(formula, formula[0][0]);
+  bool ret = DPLL(formula, formula[0][0]) || DPLL(formula, -formula[0][0]) ;
 
-  cout << "This Formula is " << ret << endl;
+  string ret_val = (ret) ? "SAT" : "UNSAT";
+
+  cout << "This Formula is " << ret_val << endl;
 
   return 0;
 }
