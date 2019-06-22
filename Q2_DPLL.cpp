@@ -57,11 +57,11 @@ enum bcp_status BCP(  vector< vector< int > >& formula, int var ) {
   vector< vector< int > > copy = formula;
 
   for ( int i = 0; i < copy.size(); i++ ) {
-    if (in_vector(copy[i], var)) {
+    if (in_vector(copy[i], var) && copy[i].size() > 1) {
       copy.erase(copy.begin() + i);
       i--;
     }
-    else if(in_vector(copy[i], -var) && copy[i].size() != 0) {
+    else if(in_vector(copy[i], -var) && copy[i].size() > 1) {
       copy[i].erase(find(copy[i].begin(), copy[i].end(), -var));
     }
     else if(in_vector(copy[i], -var)) {
@@ -97,7 +97,7 @@ int main()
   vector<vector<int>> formula;
 
   //Open File
-  ifstream file("Input/CNF_1.txt");
+  ifstream file("Input/CNF_2.txt");
   if( !file.is_open() ){
     cout << "Couldn't open the file" << "\n";
     return -1;
