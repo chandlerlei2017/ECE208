@@ -6,6 +6,7 @@
 #include <algorithm>
 
 using namespace std;
+int counter = 0;
 
 enum bcp_status{sat, unsat, cont};
 
@@ -21,7 +22,7 @@ void print_vector( vector<vector<int>> temp ){
     cout << "]" ;
     if ( i != temp.size() - 1) cout << ", ";
   }
-  cout << "]" << endl;
+  cout << "]" << endl << endl;
 }
 
 // Determine if element is in the vector
@@ -57,7 +58,7 @@ enum bcp_status BCP(  vector< vector< int > >& formula, int var ) {
   vector< vector< int > > copy = formula;
 
   for ( int i = 0; i < copy.size(); i++ ) {
-    if (in_vector(copy[i], var) && copy[i].size() > 1) {
+    if (in_vector(copy[i], var)) {
       copy.erase(copy.begin() + i);
       i--;
     }
@@ -65,6 +66,7 @@ enum bcp_status BCP(  vector< vector< int > >& formula, int var ) {
       copy[i].erase(find(copy[i].begin(), copy[i].end(), -var));
     }
     else if(in_vector(copy[i], -var)) {
+      //cout << "UNSAT RETURNED" << endl;
       return unsat;
     }
   }
@@ -73,7 +75,7 @@ enum bcp_status BCP(  vector< vector< int > >& formula, int var ) {
 
   UR(copy);
 
-  print_vector(copy);
+  //print_vector(copy);
 
   if ( copy.size() == 0 ) return sat;
 
@@ -91,13 +93,13 @@ bool DPLL(  vector<vector<int>> formula, int assn ) {
   return DPLL( formula, formula[0][0] ) || DPLL( formula, -formula[0][0] );
 }
 
-int main()
+int main(int argc, char* argv[])
 {
   string line;
   vector<vector<int>> formula;
 
   //Open File
-  ifstream file("Input/CNF_2.txt");
+  ifstream file(argv[1]);
   if( !file.is_open() ){
     cout << "Couldn't open the file" << "\n";
     return -1;
@@ -105,11 +107,17 @@ int main()
 
   //Extract formula from the file
   while( getline(file,line) ){
-    istringstream is( line );
+    istringstream is(line);
     int n;
     vector<int> clause;
 
-    while (is >> n) {
+    char c = is.peek();
+
+    if(c == 'c' || c == 'p') {
+      continue;
+    }
+
+    while (is >> n && n != 0) {
       clause.push_back(n);
     }
 
